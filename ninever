@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport for mobile scaling -->
+  <title>Catch Game for My Girl 💕</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #ffe6f0;
+      font-family: sans-serif;
+    }
+
+    /* Make the game container responsive */
+    #game {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      background-image: url('https://i.imgur.com/KDL58iu.png');
+      background-size: 100%
+       ;
+      background-position: center;
+      max-width: 100%; /* Ensures it doesn't stretch too wide */
+      max-height: 100%; /* Ensures it doesn't stretch too high */
+    }
+
+    /* Player style */
+    .player {
+      width: 60px;
+      height: 60px;
+      background-image: url('https://i.imgur.com/eSrOVmt.jpeg');
+      background-size: 125%;
+      background-position:66%;
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Emoji items style */
+    .item {
+      position: absolute;
+      top: 0;
+      font-size: 30px;
+    }
+
+    /* Score display style */
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px;
+      color: #333;
+    }
+
+    /* Pop-up text style */
+    .pop-up-text {
+      position: absolute;
+      font-size: 30px;
+      font-weight: bold;
+      color: #3B3131;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 1;
+      transition: opacity 2s ease-out;
+    }
+
+    /* Media query for smaller screens (phones, etc.) */
+    @media (max-width: 600px) {
+      .player {
+        width: 50px;
+        height: 50px;
+      }
+
+      #score {
+        font-size: 20px;
+      }
+
+      .pop-up-text {
+        font-size: 20px;
+      }
+
+      .item {
+        font-size: 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="score">Score: 0</div>
+    <div class="player" id="player"></div>
+  </div>
+
+  <script>
+    const player = document.getElementById('player');
+    const game = document.getElementById('game');
+    const scoreDisplay = document.getElementById('score');
+    let score = 0;
+
+    // SMOOTH PLAYER MOVEMENT
+    let playerX = window.innerWidth / 2;
+    let leftPressed = false;
+    let rightPressed = false;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') leftPressed = true;
+      if (e.key === 'ArrowRight') rightPressed = true;
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowLeft') leftPressed = false;
+      if (e.key === 'ArrowRight') rightPressed = false;
+    });
+
+    function updatePlayerPosition() {
+      if (leftPressed) playerX -= 10;
+      if (rightPressed) playerX += 10;
+      playerX = Math.max(0, Math.min(playerX, window.innerWidth - 60));
+      player.style.left = playerX + 'px';
+      requestAnimationFrame(updatePlayerPosition);
+    }
+    updatePlayerPosition();
+
+    // Expanded items array with more emojis
+    const items = ['🍌', '🍣', '💄', '🌕🌕', '🌷', '🌈', '❤️', '🦋', '🎵', '👸🏽','https://i.imgur.com/JZ5PLpS.png',];
+
+    // Create a mapping between the emoji and its corresponding text
+    const itemTexts = {
+      '🍌': 'Good Girl 😈',
+      '🍣': 'SUSHI KISS 💋',
+      '💄': 'YOU OWE ME A BLOWJOB 👄',
+      '🌕🌕': 'SEND ME CUCU 😋',
+      '🌷': 'MY TULIP GIRL FOREVER ❤️',
+      '🌈': 'YOUR RAINBOW MAN 💪',
+      '❤️': '❤️❤️❤️ LOML ❤️❤️❤️',
+      '🦋': '❤️❤️ NINEVER ❤️❤️',
+      '🎵': 'MY PLAYLIST GIRL ❤️',
+      '👸': 'MY BEAUTIFUL ASIAN PRINCESS ❤️',
+      'https://i.imgur.com/JZ5PLpS.png': 'YOUR HUSBAND 🍆',
+    };
+
+function createItem() {
+  const item = document.createElement('div');
+  item.classList.add('item');
+
+  // Select a random item (emoji or image)
+  const selectedItem = items[Math.floor(Math.random() * items.length)];
+
+  // Check if the selected item is a URL (image)
+  if (selectedItem.startsWith('https://i.imgur.com/JZ5PLpS.png')) {
+    // If it's an image URL, create an <img> element
+    const img = document.createElement('img');
+    img.src = selectedItem;
+    img.style.width = '40px'; // Adjust the size as needed
+    img.style.height = '40px'; // Adjust the size as needed
+    img.style.borderRadius = '50%'; // Makes the image round
+   
+  item.appendChild(img);
+  } else {
+    // Otherwise, it's a regular emoji, so use text content
+    item.textContent = selectedItem;
+  }
+
+  // Set a random position for the item to drop from
+  item.style.left = Math.random() * (window.innerWidth - 30) + 'px';
+  game.appendChild(item);
+
+  let y = 0;
+  const fall = setInterval(() => {
+    y += 2.5; // slower fall
+    item.style.top = y + 'px';
+
+    const itemRect = item.getBoundingClientRect();
+    const playerRect = player.getBoundingClientRect();
+
+    if (
+      itemRect.bottom >= playerRect.top &&
+      itemRect.left < playerRect.right &&
+      itemRect.right > playerRect.left
+    ) {
+      // Get the corresponding text for the item caught
+      const text = itemTexts[item.textContent] || '';
+
+      if (text) {
+        // Show corresponding text (e.g., "Good Girl!" for banana)
+        showPopUpText(text);
+      }
+
+      score++;
+      scoreDisplay.textContent = 'Score: ' + score;
+      item.remove();
+      clearInterval(fall);
+    }
+
+    if (y > window.innerHeight) {
+      item.remove();
+      clearInterval(fall);
+    }
+  }, 16);
+}
+
+    // DROP LESS FREQUENTLY
+    setInterval(createItem, 100);
+
+    // Function to show the pop-up text (e.g., "Good Girl!")
+    function showPopUpText(text) {
+      const popUpText = document.createElement('div');
+      popUpText.classList.add('pop-up-text');
+      popUpText.textContent = text;
+      game.appendChild(popUpText);
+
+      // Fade out the pop-up text after 2 seconds
+      setTimeout(() => {
+        popUpText.style.opacity = 0;
+      }, 100); // 100ms delay to ensure it's visible for a brief moment
+
+      // Remove the pop-up text after the fade-out transition
+      setTimeout(() => {
+        popUpText.remove();
+      }, 2100); // 2100ms to allow for fade-out transition
+    }
+  </script>
+</body>
+</html>
